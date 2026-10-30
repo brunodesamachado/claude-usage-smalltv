@@ -29,7 +29,7 @@ def _local(ts: float) -> datetime:
 class Daemon:
     def __init__(
         self,
-        device: Device,
+        device: Device | None,
         client: UsageClient,
         renderer: Renderer,
         *,
@@ -38,9 +38,9 @@ class Daemon:
         stale_after: float = 900,
         max_backoff: float = 1800,
         clock: Callable[[], float] = time.time,
-        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
-        self.device = device
+        self.device = device  # None: keep usage fresh (for the web page) but draw nothing
+        self.ip_label: str | None = None  # shown on the panel when set
         self.client = client
         self.renderer = renderer
         self.frame_interval = frame_interval
@@ -48,24 +48,29 @@ class Daemon:
         self.stale_after = stale_after
         self.max_backoff = max_backoff
         self._clock = clock
-        self._sleep = sleep
 
         self.usage: Usage | None = None
         self.fetched_at: float | None = None
         self.problem: str | None = None
         self.next_fetch = 0.0
+        self.pushed_at: float | None = None
+        self.display_error: DeviceError | None = None
         self._backoff = usage_interval
 
     def tick(self) -> None:
         now = self._clock()
         if now >= self.next_fetch:
             self._refresh(now)
-        frame = self.frame(now)
+        if self.device is None:
+            return
         try:
-            self.device.push(to_jpeg(self.renderer.render(frame)))
+            self.device.push(to_jpeg(self.renderer.render(self.frame(now))))
         except DeviceError as exc:
+            self.display_error = exc
             log.warning("display: %s", exc)
             return
+        self.display_error = None
+        self.pushed_at = now
         log.info("frame pushed%s", self._summary())
 
     def frame(self, now: float) -> Frame:
@@ -75,19 +80,8 @@ class Daemon:
             now=_local(now),
             stale_since=_local(self.fetched_at) if stale and self.fetched_at else None,
             problem=self.problem if self.usage is None else None,
+            ip=self.ip_label,
         )
-
-    def run_forever(self) -> None:
-        log.info(
-            "updating %s every %ss (usage every %ss)",
-            self.device.firmware,
-            self.frame_interval,
-            self.usage_interval,
-        )
-        while True:
-            self.tick()
-            # Wake just after the next interval boundary so the clock flips on time.
-            self._sleep(self.frame_interval - self._clock() % self.frame_interval + 0.5)
 
     def _refresh(self, now: float) -> None:
         try:

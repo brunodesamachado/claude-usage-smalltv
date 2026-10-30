@@ -32,6 +32,10 @@ dev = [
     "pytest>=8",
     "ruff>=0.6",
 ]
+# Standalone Windows .exe: python scripts/build_exe.py
+build = [
+    "pyinstaller>=6.10",
+]
 
 [project.scripts]
 claude-usage-smalltv = "claude_usage_smalltv.cli:main"

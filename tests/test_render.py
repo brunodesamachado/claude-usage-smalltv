@@ -24,6 +24,7 @@ def test_render_is_square_black_and_scaled(scale):
         Frame(None, NOW, problem="login"),
         Frame(demo_usage(NOW), NOW, stale_since=NOW - timedelta(minutes=20)),
         Frame(demo_usage(NOW, session=0, weekly=100), NOW),
+        Frame(demo_usage(NOW), NOW, ip="192.168.100.200"),
     ],
 )
 @pytest.mark.parametrize("lang", ["en", "pt"])

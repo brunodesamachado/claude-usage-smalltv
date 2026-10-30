@@ -109,6 +109,7 @@ class Frame:
     now: datetime
     stale_since: datetime | None = None
     problem: str | None = None  # "login" or "usage"; translated by the renderer
+    ip: str | None = None  # the display's own address, shown small under the logo
 
 
 def draw_spark(px: int, color: RGB) -> Image.Image:
@@ -152,7 +153,7 @@ class Renderer:
         size = BASE * self.scale
         img = Image.new("RGB", (size, size), self.theme.background)
         d = ImageDraw.Draw(img)
-        self._header(img, d, frame.now)
+        self._header(img, d, frame.now, frame.ip)
         if frame.usage:
             self._meter(d, 100, str(self.labels["session"]), frame.usage.session, frame.now)
             self._meter(d, 162, str(self.labels["weekly"]), frame.usage.weekly, frame.now)
@@ -170,7 +171,9 @@ class Renderer:
     def _weekday(self, dt: datetime) -> str:
         return self.labels["weekdays"][dt.weekday()]  # type: ignore[index]
 
-    def _header(self, img: Image.Image, d: ImageDraw.ImageDraw, now: datetime) -> None:
+    def _header(
+        self, img: Image.Image, d: ImageDraw.ImageDraw, now: datetime, ip: str | None
+    ) -> None:
         t = self.theme
         logo = draw_spark(self._p(46), t.accent)
         img.paste(logo, (self._p(12), self._p(11)), logo)
@@ -183,6 +186,8 @@ class Renderer:
         )
         date = f"{self._weekday(now)} {now.strftime(str(self.labels['month_day']))}"
         d.text((self._p(228), self._p(60)), date, font=self._font(14), fill=t.muted, anchor="rm")
+        if ip:
+            d.text((self._p(14), self._p(66)), ip, font=self._font(11), fill=t.dim, anchor="ls")
         d.line(
             (self._p(14), self._p(74), self._p(226), self._p(74)),
             fill=t.track,

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Usage SmallTV</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -2.75 11 11' shape-rendering='crispEdges'%3E%3Cpath fill='%23D97757' d='M2 0h7v2h2v1h-2v1h-7v-1h-2v-1h2zM2 4h1v1.5h-1zM4 4h1v1.5h-1zM6 4h1v1.5h-1zM8 4h1v1.5h-1z'/%3E%3Cpath fill='%23141413' d='M3 1h1v1h-1zM7 1h1v1h-1z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <!-- Pixel mascot drawn for this project (11 x 5.5 grid): body, arms, four legs, two eyes. -->
+      <svg class="mascot" viewBox="0 0 11 5.5" shape-rendering="crispEdges" aria-hidden="true">
+        <path class="body" d="M2 0h7v2h2v1h-2v1h-7v-1h-2v-1h2zM2 4h1v1.5h-1zM4 4h1v1.5h-1zM6 4h1v1.5h-1zM8 4h1v1.5h-1z"/>
+        <path class="eyes" d="M3 1h1v1h-1zM7 1h1v1h-1z"/>
+      </svg>
+      <div>
+        <h1>Claude Usage <span>SmallTV</span></h1>
+        <p id="subtitle"></p>
+      </div>
+    </div>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" data-ui-lang="pt">PT</button>
+      <button type="button" data-ui-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main id="app" aria-live="polite">
+    <p class="loading" id="loading">…</p>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <footer class="foot">
+    <span id="version"></span> ·
+    <a href="https://github.com/brunodesamachado/claude-usage-smalltv" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import logging
-import time
-from collections.abc import Callable
-
 from claude_usage_smalltv.devices.base import (
     PANEL_FILENAME,
     Device,
@@ -28,10 +24,7 @@ __all__ = [
     "HttpDevice",
     "SdProDevice",
     "connect",
-    "connect_when_reachable",
 ]
-
-log = logging.getLogger(__name__)
 
 
 def connect(host: str, timeout: float = 15, retries: int = 3) -> Device:
@@ -49,19 +42,3 @@ def connect(host: str, timeout: float = 15, retries: int = 3) -> Device:
         f"{host} answered, but its firmware is not supported. "
         "Supported: SD PRO, GeekMagic stock (experimental)."
     )
-
-
-def connect_when_reachable(
-    host: str, retry_every: float = 60, sleep: Callable[[float], None] = time.sleep
-) -> Device:
-    """Like `connect`, but wait for a display that is off or asleep instead of giving up.
-
-    A background service started at logon must not die because the display was unplugged
-    at that moment: Windows Task Scheduler does not restart a task that exits with an error.
-    """
-    while True:
-        try:
-            return connect(host)
-        except DeviceUnreachable as exc:
-            log.warning("display: %s Retrying in %.0fs.", exc, retry_every)
-            sleep(retry_every)

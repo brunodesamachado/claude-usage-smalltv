@@ -10,6 +10,7 @@ dist/
 .ruff_cache/
 .coverage
 htmlcov/
+.playwright-mcp/
 
 # Local output — never commit your own usage, logs or device backups
 claude-usage-preview.png

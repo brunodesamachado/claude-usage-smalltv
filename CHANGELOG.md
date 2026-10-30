@@ -4,7 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.2.0] - 2026-10-30
+
+### Added
+
+- Settings page in the browser (`http://127.0.0.1:8765`), served by the service itself:
+  a 4-step assistant (Claude login, find the display, language with live preview, set up)
+  and a status page with usage, display health, preview, recent activity, change display
+  and give the display back. English and Portuguese, light and dark.
+- Running with no command (or double-clicking the `.exe`) starts the service and opens the
+  page; if the service is already running, it just opens the page.
+- "Start with the computer" switch: Task Scheduler on Windows, launchd on macOS, systemd
+  on Linux.
+- "Show the IP on the display" option: the display's address in small print under the logo.
+- Settings are saved to `config.json`, so `run`, `doctor`, `setup` and `restore` work
+  without passing the IP.
+- Standalone Windows `.exe` (no Python needed), built and attached to each GitHub release.
+- `run --port`, `--no-web` and `--open`.
+
+### Changed
+
+- The service keeps refreshing usage while the display is off, and switches display or
+  language without a restart.
 
 ### Fixed
 

@@ -1,0 +1,37 @@
+name: Release
+
+# Builds the standalone Windows .exe and attaches it to the GitHub release.
+# Runs when a release is published; "Run workflow" builds it as a downloadable artifact only.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[build]"
+      - run: python scripts/build_exe.py
+      - name: Smoke test (renders a demo panel)
+        shell: pwsh
+        run: |
+          Start-Process -Wait -FilePath dist\claude-usage-smalltv.exe -ArgumentList "preview", "--demo", "-o", "smoke.png"
+          if (-not (Test-Path smoke.png)) { throw "the exe did not render the preview" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claude-usage-smalltv-windows
+          path: dist/claude-usage-smalltv.exe
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/claude-usage-smalltv.exe --clobber

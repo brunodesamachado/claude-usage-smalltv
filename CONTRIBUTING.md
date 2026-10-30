@@ -30,9 +30,21 @@ src/claude_usage_smalltv/
 ├── render.py        draw the 240×240 panel (layout in 240 px units, any integer scale)
 ├── devices/         one driver per display firmware, chosen by probing
 ├── daemon.py        frame every minute, usage on a slower cadence with 429 backoff
+├── service.py       the long-running service: display loop, reconnects, actions for the page
+├── web.py           settings page server (127.0.0.1 only) and its JSON API
+├── web/             the page itself: index.html, app.js, style.css (no build step)
+├── config.py        saved settings (config.json)
+├── autostart.py     start at logon: Task Scheduler, launchd, systemd
 ├── discovery.py     LAN scan
-└── cli.py           argparse entry point
+└── cli.py           argparse entry point; no command = service + page
 ```
+
+The page is plain HTML, CSS and JavaScript on purpose: edit the files in `web/` and reload
+the browser, no Node or bundler needed. Keep every user-facing string in both languages
+(`I18N` in `app.js`).
+
+To build the standalone Windows executable: `pip install -e ".[build]"` and
+`python scripts/build_exe.py` (output in `dist/`).
 
 ## Adding a firmware driver
 
