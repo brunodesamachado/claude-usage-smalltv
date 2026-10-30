@@ -42,7 +42,7 @@ Veja quanto resta da sessão de 5 horas e do limite semanal com uma olhada, sem 
   <tr>
     <td><img src="docs/photos/photo-1.jpg" width="260" alt="O painel numa mesa"></td>
     <td><img src="docs/photos/photo-2.jpg" width="260" alt="O painel de perto"></td>
-    <td><img src="docs/photos/photo-3.jpg" width="260" alt="O display ao lado do teclado"></td>
+    <td><img src="docs/photos/photo-3.jpg" width="260" alt="O display ao lado de uma pilha de livros"></td>
   </tr>
 </table>
 

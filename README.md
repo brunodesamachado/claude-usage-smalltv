@@ -42,7 +42,7 @@ See how much of your 5-hour session and weekly limit you have left at a glance, 
   <tr>
     <td><img src="docs/photos/photo-1.jpg" width="260" alt="The panel on a desk"></td>
     <td><img src="docs/photos/photo-2.jpg" width="260" alt="Close-up of the panel"></td>
-    <td><img src="docs/photos/photo-3.jpg" width="260" alt="The display next to a keyboard"></td>
+    <td><img src="docs/photos/photo-3.jpg" width="260" alt="The display next to a stack of books"></td>
   </tr>
 </table>
 
