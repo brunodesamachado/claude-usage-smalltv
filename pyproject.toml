@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-usage-smalltv"
+dynamic = ["version"]
+description = "Your Claude plan usage (5-hour session and weekly limits), live on a GeekMagic SmallTV desk display."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Bruno Machado", email = "brunodesamachado@hotmail.com" }]
+keywords = ["claude", "claude-code", "anthropic", "usage", "geekmagic", "smalltv", "esp8266", "desk-display"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: System :: Monitoring",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "requests>=2.31",
+    "pillow>=10.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+claude-usage-smalltv = "claude_usage_smalltv.cli:main"
+
+# Same CLI without a console window, for Windows Task Scheduler (logs go to a file).
+[project.gui-scripts]
+claude-usage-smalltvw = "claude_usage_smalltv.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv"
+Issues = "https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv/issues"
+Changelog = "https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "src/claude_usage_smalltv/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/claude_usage_smalltv"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

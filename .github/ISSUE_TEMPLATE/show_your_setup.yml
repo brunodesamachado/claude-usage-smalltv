@@ -1,0 +1,29 @@
+name: Show your setup
+description: Share a photo of claude-usage-smalltv on your desk; it may be featured in the README.
+title: "[Setup] "
+labels: [showcase]
+body:
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo
+      description: Drag and drop one or more photos here. Landscape (4:3) looks best in the README.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Display model and firmware
+      description: For example "SmallTV Ultra, SD PRO"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: Your theme or language, where it sits, ideas for the project...
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Permission
+      options:
+        - label: I took this photo and I'm OK with it being shown in this project's README.
+          required: true

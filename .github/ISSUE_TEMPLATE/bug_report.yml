@@ -1,0 +1,32 @@
+name: Bug or firmware report
+description: Something doesn't work, or you tried a firmware that isn't listed yet.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you ran, what you expected and what you saw on the display.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `claude-usage-smalltv doctor <ip>`
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Display model and firmware
+      description: For example "SmallTV Ultra, SD PRO" or the page title of http://<ip>/
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and Python version
+  - type: markdown
+    attributes:
+      value: >
+        ⚠️ Please don't paste the output of the display's `/config` endpoint or your
+        `~/.claude/.credentials.json`: they contain your Wi-Fi password and Claude token.
