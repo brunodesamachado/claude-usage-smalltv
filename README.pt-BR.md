@@ -8,7 +8,7 @@
 
 Veja quanto resta da sessão de 5 horas e do limite semanal com uma olhada, sem abrir o app nem digitar `/usage`.
 
-[![CI](https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv/actions/workflows/ci.yml)
+[![CI](https://github.com/brunodesamachado/claude-usage-smalltv/actions/workflows/ci.yml/badge.svg)](https://github.com/brunodesamachado/claude-usage-smalltv/actions/workflows/ci.yml)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB)
 ![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)
 ![Claude Pro e Max](https://img.shields.io/badge/Claude-Pro%20%7C%20Max-D97757)
@@ -71,7 +71,7 @@ Não sabe qual é o seu? Abra `http://<ip-do-display>/` no navegador: o SD PRO m
 Você precisa de **Python 3.10+**, um **plano Claude Pro ou Max** e o **[Claude Code](https://code.claude.com/docs/en/overview)** com login feito no mesmo computador.
 
 ```bash
-pipx install git+https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv
+pipx install git+https://github.com/brunodesamachado/claude-usage-smalltv
 claude-usage-smalltv doctor 192.168.1.50     # confere login, API de uso e display
 claude-usage-smalltv setup 192.168.1.50      # deixa só o painel na tela (desfazer: restore)
 claude-usage-smalltv run 192.168.1.50        # mantém atualizado
@@ -117,7 +117,7 @@ Instale o [Claude Code](https://code.claude.com/docs/en/overview) e rode `claude
 <summary><b>4. Instale o claude-usage-smalltv</b></summary>
 
 ```bash
-pipx install git+https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv
+pipx install git+https://github.com/brunodesamachado/claude-usage-smalltv
 ```
 
 Depois confira se tudo responde. O `doctor` só lê, não muda nada:
@@ -304,7 +304,7 @@ As partes são pequenas e testadas isoladamente: `credentials` → `usage` → `
 ## 🛠️ Desenvolvimento
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv
+git clone https://github.com/brunodesamachado/claude-usage-smalltv
 cd claude-usage-smalltv
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"

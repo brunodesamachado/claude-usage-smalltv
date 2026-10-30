@@ -41,9 +41,9 @@ claude-usage-smalltv = "claude_usage_smalltv.cli:main"
 claude-usage-smalltvw = "claude_usage_smalltv.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv"
-Issues = "https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv/issues"
-Changelog = "https://github.com/YOUR_GITHUB_USER/claude-usage-smalltv/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/brunodesamachado/claude-usage-smalltv"
+Issues = "https://github.com/brunodesamachado/claude-usage-smalltv/issues"
+Changelog = "https://github.com/brunodesamachado/claude-usage-smalltv/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
 path = "src/claude_usage_smalltv/__init__.py"
