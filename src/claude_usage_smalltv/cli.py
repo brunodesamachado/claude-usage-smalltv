@@ -17,7 +17,7 @@ from claude_usage_smalltv import __version__
 from claude_usage_smalltv.credentials import CredentialsError, load_token
 from claude_usage_smalltv.daemon import Daemon
 from claude_usage_smalltv.demo import demo_usage
-from claude_usage_smalltv.devices import DeviceError, connect
+from claude_usage_smalltv.devices import DeviceError, connect, connect_when_reachable
 from claude_usage_smalltv.discovery import scan
 from claude_usage_smalltv.paths import backup_file, state_dir
 from claude_usage_smalltv.render import LABELS, Frame, Renderer, to_jpeg
@@ -131,12 +131,15 @@ def cmd_setup(args: argparse.Namespace) -> int:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
-    device = connect(args.host)
-    daemon = Daemon(device, UsageClient(), Renderer(args.lang), usage_interval=args.usage_interval)
-    if args.once:
-        daemon.tick()
-        return 0
     try:
+        # A one-shot run (e.g. cron) fails fast; the service waits for a display that is off.
+        device = connect(args.host) if args.once else connect_when_reachable(args.host)
+        daemon = Daemon(
+            device, UsageClient(), Renderer(args.lang), usage_interval=args.usage_interval
+        )
+        if args.once:
+            daemon.tick()
+            return 0
         daemon.run_forever()
     except KeyboardInterrupt:
         log.info("stopped")

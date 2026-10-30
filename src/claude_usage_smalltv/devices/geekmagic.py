@@ -9,7 +9,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from claude_usage_smalltv.devices.base import PANEL_FILENAME, DeviceError, HttpDevice
+from claude_usage_smalltv.devices.base import (
+    PANEL_FILENAME,
+    DeviceError,
+    DeviceUnreachable,
+    HttpDevice,
+)
 
 ALBUM_THEME = 3  # "Photo Album" on the stock SmallTV-Ultra firmware
 IMAGE_DIR = "/image/"
@@ -22,6 +27,8 @@ class GeekMagicDevice(HttpDevice):
     def probe(dev: HttpDevice) -> bool:
         try:
             return isinstance(dev.get_json("/app.json"), dict)
+        except DeviceUnreachable:
+            raise
         except DeviceError:
             return False
 

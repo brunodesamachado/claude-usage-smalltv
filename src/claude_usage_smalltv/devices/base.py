@@ -19,6 +19,10 @@ class DeviceError(RuntimeError):
     """The display could not be reached or rejected a request."""
 
 
+class DeviceUnreachable(DeviceError):
+    """No answer at all: the display is off, asleep or off the network."""
+
+
 class Device(Protocol):
     firmware: str
 
@@ -95,4 +99,6 @@ class HttpDevice:
             if resp.status_code >= 400:
                 raise DeviceError(f"{method} {path} returned HTTP {resp.status_code}")
             return resp
-        raise DeviceError(f"{method} {path} failed after {self.retries} attempts: {last}") from last
+        raise DeviceUnreachable(
+            f"{method} {path} failed after {self.retries} attempts: {last}"
+        ) from last

@@ -5,10 +5,12 @@ from fakes import FakeResponse, FakeSession
 from claude_usage_smalltv.devices import (
     PANEL_FILENAME,
     DeviceError,
+    DeviceUnreachable,
     GeekMagicDevice,
     HttpDevice,
     SdProDevice,
     connect,
+    connect_when_reachable,
 )
 from claude_usage_smalltv.devices import base as devices_base
 
@@ -122,3 +124,28 @@ def test_connect_picks_driver_by_probing(monkeypatch):
     monkeypatch.setattr(devices_base.requests, "Session", lambda: FakeSession())
     with pytest.raises(DeviceError, match="not supported"):
         connect("10.0.0.9")
+
+
+def unreachable_session() -> FakeSession:
+    down = requests.ConnectTimeout("timed out")
+    return FakeSession({("GET", "/photo/list"): down, ("GET", "/app.json"): down})
+
+
+def test_connect_tells_an_unreachable_display_from_an_unsupported_one(monkeypatch):
+    monkeypatch.setattr(devices_base.requests, "Session", unreachable_session)
+    with pytest.raises(DeviceUnreachable, match="not answering") as caught:
+        connect("10.0.0.9")
+    assert "not supported" not in str(caught.value)
+
+
+def test_connect_when_reachable_waits_for_the_display_to_come_back(monkeypatch):
+    sessions = [unreachable_session(), unreachable_session()]
+    monkeypatch.setattr(
+        devices_base.requests,
+        "Session",
+        lambda: sessions.pop(0) if sessions else FakeSession({("GET", "/photo/list"): PHOTOS}),
+    )
+    waits = []
+    device = connect_when_reachable("10.0.0.9", retry_every=60, sleep=waits.append)
+    assert isinstance(device, SdProDevice)
+    assert waits == [60, 60]

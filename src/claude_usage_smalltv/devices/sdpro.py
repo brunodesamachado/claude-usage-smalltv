@@ -8,7 +8,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from claude_usage_smalltv.devices.base import PANEL_FILENAME, DeviceError, HttpDevice
+from claude_usage_smalltv.devices.base import (
+    PANEL_FILENAME,
+    DeviceError,
+    DeviceUnreachable,
+    HttpDevice,
+)
 
 PHOTO_THEME = 2  # THEME_DICT in the firmware's javascript.js: 2 = "Photo"
 
@@ -20,6 +25,8 @@ class SdProDevice(HttpDevice):
     def probe(dev: HttpDevice) -> bool:
         try:
             return isinstance(dev.get_json("/photo/list").get("files"), list)
+        except DeviceUnreachable:
+            raise
         except (DeviceError, AttributeError):
             return False
 

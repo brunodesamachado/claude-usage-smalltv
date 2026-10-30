@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- `run` now waits for a display that is off or off the network, retrying every minute,
+  instead of exiting. Windows Task Scheduler does not restart a task that exits with an
+  error, so the panel stayed frozen until the next logon. `run --once` still fails fast.
+- An unreachable display is no longer reported as "firmware is not supported".
+
 ## [0.1.0] - 2026-10-29
 
 ### Added
