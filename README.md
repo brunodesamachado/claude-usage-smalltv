@@ -56,7 +56,7 @@ See how much of your 5-hour session and weekly limit you have left at a glance, 
 The panel runs on the **GeekMagic SmallTV**, a 240×240 Wi-Fi desk display about the size of a cube of sugar.
 
 <!-- Replace YOUR-PURCHASE-LINK with your store or affiliate link. -->
-**➡️ [Buy the GeekMagic SmallTV Ultra](https://YOUR-PURCHASE-LINK)**
+**➡️ [Buy the GeekMagic SmallTV Ultra](https://s.click.aliexpress.com/e/_c3WKJDwx)**
 
 <!-- If that is an affiliate link, keep this disclosure:
 <sub>Affiliate link: buying through it supports this project at no extra cost to you.</sub>
