@@ -36,7 +36,7 @@ src/claude_usage_smalltv/
 ├── config.py        saved settings (config.json)
 ├── autostart.py     start at logon: Task Scheduler, launchd, systemd
 ├── tray.py          Windows notification-area icon (pystray, imported lazily)
-├── icon.py          the pixel mascot: .exe icon and tray icon
+├── icon.py          the app icon (SmallTV with the spark): .exe and tray
 ├── discovery.py     LAN scan
 └── cli.py           argparse entry point; no command = service + page
 ```

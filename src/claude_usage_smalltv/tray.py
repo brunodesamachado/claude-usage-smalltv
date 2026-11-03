@@ -15,7 +15,7 @@ import webbrowser
 from collections.abc import Callable
 from typing import Any
 
-from claude_usage_smalltv.icon import RGB, mascot
+from claude_usage_smalltv.icon import RGB, app_icon
 from claude_usage_smalltv.service import Service
 
 log = logging.getLogger(__name__)
@@ -124,7 +124,7 @@ class Tray:
         self._autostart = self._autostart_enabled()
         self.icon = pystray.Icon(
             "claude-usage-smalltv",
-            mascot(64, status_light(self._brief)),
+            app_icon(64, status_light(self._brief)),
             tooltip(self._brief),
             menu(
                 item(lambda _: display_line(self._brief), None, enabled=False),
@@ -169,7 +169,7 @@ class Tray:
                     self._autostart = self._autostart_enabled()
                 if status_light(self._brief) != light:
                     light = status_light(self._brief)
-                    self.icon.icon = mascot(64, light)
+                    self.icon.icon = app_icon(64, light)
                 self.icon.title = tooltip(self._brief)
                 self.icon.update_menu()
                 moved = old_host and self._brief["host"] not in (None, old_host)

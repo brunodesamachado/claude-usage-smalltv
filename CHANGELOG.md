@@ -8,8 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
-- Windows notification-area (tray) icon: the mascot with a status light (green, amber,
-  red, gray) and the usage in its tooltip. A click opens the settings page; the menu has
+- Windows notification-area (tray) icon: a SmallTV with the orange spark and a status
+  light (green, amber, red, gray), and the usage in its tooltip. A click opens the settings page; the menu has
   "Test connection", "Start with Windows" and "Quit". A notification says when the
   display was found at a new IP. `run --no-tray` turns it off.
 - "Quit" in the tray menu replaces ending the process in Task Manager before updating.
@@ -17,6 +17,8 @@ All notable changes to this project are documented here. The format follows
 ### Changed
 
 - On Windows, "Start with the computer" is called "Start with Windows" on the page too.
+- The `.exe` icon is the same SmallTV with the orange spark (it was the pixel mascot,
+  which stays as the settings page's logo).
 
 ### Fixed
 

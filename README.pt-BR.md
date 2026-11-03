@@ -29,7 +29,7 @@ Veja quanto resta da sessão de 5 horas e do limite semanal com uma olhada, sem 
 - **Sem gravar firmware.** Conversa com a API web original do display pelo Wi-Fi.
 - **Educado com a API.** O uso é consultado a cada 5 minutos, com recuo progressivo em caso de HTTP 429, enquanto o relógio continua mudando a cada minuto.
 - **Se vira sozinho.** Se o display for desligado ou cair do Wi-Fi, o painel volta assim que ele voltar.
-- **Fica ao lado do relógio (Windows).** O mascote na área de notificação mostra uma luz de status (verde: atualizado, amarela: display sem resposta, vermelha: precisa de você) e o seu uso ao passar o mouse. Um clique abre a página de configuração; com o botão direito você testa a conexão, liga o início com o Windows ou encerra.
+- **Fica ao lado do relógio (Windows).** O ícone do SmallTV na área de notificação (a estrela laranja numa TVzinha) mostra uma luz de status (verde: atualizado, amarela: display sem resposta, vermelha: precisa de você) e o seu uso ao passar o mouse. Um clique abre a página de configuração; com o botão direito você testa a conexão, liga o início com o Windows ou encerra.
 - **Acompanha o display quando o IP muda.** Se o roteador der outro endereço a ele, o display é encontrado na rede sozinho, reconhecido pelo painel que já está salvo nele. Também dá para trocar o IP na página.
 - **Reversível.** A configuração guarda as fotos e o tema anteriores do display; um clique devolve tudo.
 - **Inglês ou português**, no painel e na página.
@@ -126,7 +126,7 @@ Dê dois cliques no `claude-usage-smalltv.exe`, ou rode `claude-usage-smalltv` s
 <details open>
 <summary><b>5. No dia a dia</b></summary>
 
-Não precisa fazer nada: o relógio atualiza a cada minuto e o uso a cada 5 minutos. No Windows, o mascote ao lado do relógio mostra como estão as coisas; clique nele (ou abra **http://127.0.0.1:8765**, salve nos favoritos) para:
+Não precisa fazer nada: o relógio atualiza a cada minuto e o uso a cada 5 minutos. No Windows, o ícone do SmallTV ao lado do relógio mostra como estão as coisas; clique nele (ou abra **http://127.0.0.1:8765**, salve nos favoritos) para:
 
 - ver se o display está atualizado, o que ele mostra agora e o seu uso;
 - trocar o idioma do painel, iniciar com o computador ou **mostrar o IP do display** em letra pequena debaixo do logo;
@@ -137,7 +137,7 @@ Não precisa fazer nada: o relógio atualiza a cada minuto e o uso a cada 5 minu
 
 ## 🔄 Atualizar
 
-**`.exe` do Windows**: baixe a versão nova da [última release](../../releases/latest). Antes de substituir o arquivo antigo, feche a cópia que está rodando: botão direito no mascote ao lado do relógio → **Encerrar**. (Versões anteriores à 0.4 não têm o ícone: Gerenciador de Tarefas → **Detalhes** → `claude-usage-smalltv.exe` → **Finalizar tarefa**.) Depois coloque o arquivo novo no mesmo lugar e dê dois cliques.
+**`.exe` do Windows**: baixe a versão nova da [última release](../../releases/latest). Antes de substituir o arquivo antigo, feche a cópia que está rodando: botão direito no ícone do SmallTV ao lado do relógio → **Encerrar**. (Versões anteriores à 0.4 não têm o ícone: Gerenciador de Tarefas → **Detalhes** → `claude-usage-smalltv.exe` → **Finalizar tarefa**.) Depois coloque o arquivo novo no mesmo lugar e dê dois cliques.
 
 **pipx**: rode `pipx upgrade claude-usage-smalltv` e reinicie o serviço:
 
@@ -151,7 +151,7 @@ Suas configurações são mantidas: elas ficam no `config.json`, fora do program
 
 ## 🔁 Iniciar automaticamente
 
-Use o item **Iniciar com o Windows** no menu do mascote, ou a chave **Iniciar com o computador** na página de configuração (no Windows, ela também se chama "Iniciar com o Windows"). Ela registra o serviço para o seu próximo login (nunca inicia uma segunda cópia ao lado da que já está rodando):
+Use o item **Iniciar com o Windows** no menu do ícone, ou a chave **Iniciar com o computador** na página de configuração (no Windows, ela também se chama "Iniciar com o Windows"). Ela registra o serviço para o seu próximo login (nunca inicia uma segunda cópia ao lado da que já está rodando):
 
 | Sistema | O que a chave cria |
 | --- | --- |
@@ -229,7 +229,7 @@ Valores passados na linha de comando valem mais que os salvos, e também são sa
 | O display ganhou outro IP | Normalmente não precisa fazer nada: em poucos minutos ele é encontrado na rede sozinho (clique em **Testar conexão** para procurar na hora). Também dá para clicar em **Alterar IP** no cartão Display. Reservar o IP no roteador evita isso, e **Mostrar o IP no display** deixa o endereço sempre à vista. |
 | A busca não acha o display | Ele pode estar dormindo. Digite o IP que aparece na tela logo depois de ligar. |
 | "O Windows protegeu o computador" | O `.exe` não tem assinatura digital: **Mais informações → Executar assim mesmo**. |
-| Não vejo o mascote ao lado do relógio | O Windows pode ter escondido o ícone na setinha **^**: arraste-o para a barra de tarefas, ou ligue em **Configurações → Personalização → Barra de tarefas → Outros ícones da bandeja do sistema**. |
+| Não vejo o ícone ao lado do relógio | O Windows pode ter escondido o ícone na setinha **^**: arraste-o para a barra de tarefas, ou ligue em **Configurações → Personalização → Barra de tarefas → Outros ícones da bandeja do sistema**. |
 | A página não abre | O serviço pode não estar rodando: abra o `.exe` (ou o `claude-usage-smalltv`) de novo. Se a porta 8765 estiver ocupada, use `run --port 8766`. |
 | Timeouts, vários segundos por requisição | Normal no ESP8266. Aproxime do roteador e use um carregador de 5 V / 1 A. A ferramenta tenta de novo sozinha. |
 | Rodapé amarelo "dados de 14:07 · tentando de novo" | A API de uso está limitando as requisições (HTTP 429). Os últimos números ficam na tela e tudo volta sozinho. Outras ferramentas consultando `/usage` também contam. |

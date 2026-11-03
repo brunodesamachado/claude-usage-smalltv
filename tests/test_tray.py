@@ -1,6 +1,6 @@
 """Tray texts, status light and actions, with a fake icon (pystray only exists on Windows)."""
 
-from claude_usage_smalltv.icon import mascot
+from claude_usage_smalltv.icon import app_icon
 from claude_usage_smalltv.tray import AMBER, GRAY, GREEN, RED, Tray, status_light, tooltip
 
 
@@ -38,10 +38,11 @@ def test_tooltip_shows_usage_and_display_in_the_panel_language():
 
 
 def test_the_icon_gets_a_status_light():
-    plain, lit = mascot(64), mascot(64, GREEN)
+    plain, lit = app_icon(64), app_icon(64, GREEN)
     assert plain.size == lit.size == (64, 64)
-    assert plain.getpixel((52, 52))[3] == 0  # transparent corner without a light
-    assert lit.getpixel((52, 52))[:3] == GREEN
+    assert plain.getpixel((0, 0))[3] == 0  # rounded, transparent corners
+    assert lit.getpixel((50, 50))[:3] == GREEN  # the light sits in the bottom-right
+    assert plain.getpixel((50, 50))[:3] != GREEN
 
 
 class FakeIcon:
