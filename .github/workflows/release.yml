@@ -15,8 +15,8 @@ jobs:
   windows-exe:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install -e ".[build]"
@@ -26,7 +26,7 @@ jobs:
         run: |
           Start-Process -Wait -FilePath dist\claude-usage-smalltv.exe -ArgumentList "preview", "--demo", "-o", "smoke.png"
           if (-not (Test-Path smoke.png)) { throw "the exe did not render the preview" }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: claude-usage-smalltv-windows
           path: dist/claude-usage-smalltv.exe
