@@ -72,7 +72,10 @@ class Handler(BaseHTTPRequestHandler):
             "/api/settings": lambda body: self.service.update_settings(
                 lang=str(body["lang"]) if "lang" in body else None,
                 show_ip=bool(body["show_ip"]) if "show_ip" in body else None,
+                auto_find=bool(body["auto_find"]) if "auto_find" in body else None,
             ),
+            "/api/host": lambda body: self.service.change_host(str(body.get("host", ""))),
+            "/api/test-connection": lambda body: self.service.test_connection(),
             "/api/autostart": lambda body: self.service.set_autostart(bool(body.get("enabled"))),
         }
         action = actions.get(urlsplit(self.path).path)

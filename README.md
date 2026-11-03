@@ -29,6 +29,7 @@ See how much of your 5-hour session and weekly limit you have left at a glance, 
 - **No firmware flashing.** It talks to the display's stock web API over your Wi-Fi.
 - **Polite to the API.** Usage is fetched every 5 minutes with exponential backoff on HTTP 429, while the clock still ticks every minute.
 - **Keeps going on its own.** If the display is unplugged or drops off the Wi-Fi, the panel comes back by itself as soon as the display does.
+- **Follows the display when its IP changes.** If the router gives it a new address, it is found on the network by itself, recognised by the panel already stored on it. You can also change the IP on the page.
 - **Reversible.** Setup saves the display's previous photos and theme; one click puts them back.
 - **English or Portuguese**, both the panel and the page.
 
@@ -131,6 +132,8 @@ Nothing to do: the clock updates every minute and the usage every 5 minutes. Ope
 
 - see whether the display is up to date, what it shows right now and your usage;
 - change the panel language, start with the computer, or **show the display's IP** in small print under the logo;
+- **test the connection** right away instead of waiting for the next retry;
+- **change the IP** when the router gives the display a new one (it is also found by itself);
 - read the recent activity, switch to another display, or **give the display back**, which restores your previous photos and theme.
 </details>
 
@@ -195,7 +198,7 @@ flowchart LR
 
 1. **Usage**: the same data Claude Code's `/usage` command shows, from `api.anthropic.com/api/oauth/usage`, authenticated with Claude Code's own OAuth token. When the token expires, `claude auth status` (the official CLI) renews it; this tool never writes credentials.
 2. **Rendering**: [Pillow](https://python-pillow.org) draws the panel. The orange spark is drawn in code, so no image assets are needed.
-3. **Display**: the image is uploaded over HTTP to the display's photo storage, overwriting the previous frame. A driver per firmware is chosen automatically by probing the device. If the display stops answering, it is probed again every minute.
+3. **Display**: the image is uploaded over HTTP to the display's photo storage, overwriting the previous frame. A driver per firmware is chosen automatically by probing the device. If the display stops answering, it is probed again every minute; after 2 minutes, the network is searched for a SmallTV that already holds the panel (it may have a new IP).
 4. **Settings page**: the same process serves a small page and JSON API on `127.0.0.1` only, built with Python's standard library and plain JavaScript, with no extra dependencies.
 
 The pieces are small and tested in isolation: `credentials` → `usage` → `render` → `devices` → `daemon`, driven by `service`, with `web` and `cli` on top.
@@ -224,7 +227,7 @@ Command-line values win over the saved ones, and are saved too.
 | Symptom | Fix |
 | --- | --- |
 | The page says the display is not answering | Check that it is plugged in and on the Wi-Fi. Nothing else to do: the panel comes back by itself. |
-| The display got a new IP | On the page, click **Change display** and search again. Then reserve the IP in your router, and turn on **Show the IP on the display** to always see it. |
+| The display got a new IP | Usually nothing to do: within a few minutes it is found on the network by itself (click **Test connection** to look right away). You can also click **Change IP** in the Display card. Reserving the IP in your router avoids it, and **Show the IP on the display** keeps it visible. |
 | Search doesn't find the display | It may be asleep. Type the IP shown on its screen right after power-on. |
 | "Windows protected your PC" | The `.exe` is not code-signed: **More info → Run anyway**. |
 | The page doesn't open | The service may not be running: open the `.exe` (or `claude-usage-smalltv`) again. If port 8765 is taken, use `run --port 8766`. |
@@ -238,6 +241,7 @@ Command-line values win over the saved ones, and are saved too.
 - Your OAuth token is read locally and sent **only** to `api.anthropic.com`. It is never logged, printed, shown on the page or written anywhere by this tool.
 - The settings page listens on `127.0.0.1` only, so other devices on your network cannot open it. Requests from other websites open in your browser are refused (`Host` and `Origin` checks, JSON-only actions).
 - Everything else stays on your network: the display is reached over plain HTTP on your LAN.
+- To find a display that moved to another IP, the service connects to port 80 of the devices on your local network, only while the display is lost and at most every 10 minutes. Turn it off on the page with **Find the display if its IP changes**.
 - The SD PRO firmware's `/config` endpoint returns your **Wi-Fi password in clear text**. This tool reads only the `theme` field from it and discards the rest.
 - Endpoints that restart the display, update its firmware, change its Wi-Fi or delete files are never called.
 

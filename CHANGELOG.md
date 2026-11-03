@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-11-02
+
+### Added
+
+- The display is followed when the router gives it a new IP: after 2 minutes without an
+  answer, the service looks for it on the local network and recognises it by the panel
+  image already stored on it (at most every 10 minutes; "Find the display if its IP
+  changes" on the page turns it off). The setup backup follows it, so "Give the display
+  back" keeps working.
+- "Change IP" in the page's Display card: switch the same display to its new address
+  without running the assistant again.
+- "Test connection" button: probe the display now instead of waiting for the next retry;
+  if it does not answer, the network search starts right away.
+
 ## [0.2.0] - 2026-10-30
 
 ### Added

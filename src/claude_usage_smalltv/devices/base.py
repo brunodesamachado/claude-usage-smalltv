@@ -35,6 +35,12 @@ class Device(Protocol):
     def restore(self, snapshot: dict[str, Any]) -> None:
         """Undo `setup` using the snapshot it returned."""
 
+    def has_panel(self) -> bool | None:
+        """Whether the panel image is already stored on the device (None: cannot tell).
+
+        This is how a display that moved to another IP is recognised as ours.
+        """
+
 
 class HttpDevice:
     def __init__(

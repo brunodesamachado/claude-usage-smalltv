@@ -19,6 +19,7 @@ class Config:
     lang: str = "en"
     usage_interval: int = 300
     show_ip: bool = False  # print the display's IP on the panel, small, under the logo
+    auto_find: bool = True  # when the display is lost, look for it on the network (new IP)
 
 
 def config_file() -> Path:

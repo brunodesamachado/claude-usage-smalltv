@@ -65,6 +65,13 @@ def test_sdpro_setup_shows_only_the_panel_and_snapshots_previous_state():
     assert calls[-1] == ("/api/set", {"key": "theme", "value": 2})
 
 
+def test_sdpro_recognises_a_display_that_already_holds_the_panel():
+    device, _ = sdpro()
+    assert device.has_panel() is True
+    device, _ = sdpro({("GET", "/photo/list"): {"files": [{"name": "cat.jpg"}]}})
+    assert device.has_panel() is False
+
+
 def test_sdpro_setup_requires_a_pushed_frame():
     device, _ = sdpro({("GET", "/photo/list"): {"files": [{"name": "cat.jpg"}]}})
     with pytest.raises(DeviceError, match="push a frame first"):

@@ -58,8 +58,24 @@ const I18N = {
     stateConnectingDetail: "This takes a few seconds.",
     stateOffline: "The display is not answering",
     stateOfflineDetail: "Check that it is plugged in and on the Wi-Fi. It will update by itself as soon as it is back, no need to do anything here.",
+    stateOfflineDetailAuto: "Check that it is plugged in and on the Wi-Fi. If it got a new IP, it will be found on the network by itself.",
     stateUnsupported: "The device at this IP is not a supported display",
-    stateUnsupportedDetail: "The display may have a new IP. Use \"Change display\" to find it again.",
+    stateUnsupportedDetail: "The display probably got a new IP. Use \"Change IP\" in the Display card.",
+    stateSearching: "Looking for the display on the network…",
+    stateSearchingDetail: "It probably got a new IP. This takes a few seconds.",
+    testNow: "Test connection",
+    testingNow: "Testing {host}…",
+    testOk: "The display answered at {host}.",
+    testUnreachable: "{host} did not answer.",
+    testUnsupported: "{host} answered, but it is not a supported display.",
+    testSearching: "Looking for it on the network now…",
+    changeIp: "Change IP",
+    changeIpLabel: "The same display got a new address? Type it here. It shows on the display right after power-on.",
+    save: "Save",
+    savingIp: "Connecting…",
+    ipChanged: "Done: the display is now at {host}.",
+    autoFind: "Find the display if its IP changes",
+    autoFindHint: "When it stops answering, look for it on the network. It is recognised by the panel already stored on it.",
     nowOnScreen: "On the display now",
     usage: "Usage",
     session: "5-hour session",
@@ -149,8 +165,24 @@ const I18N = {
     stateConnectingDetail: "Isso leva alguns segundos.",
     stateOffline: "O display não está respondendo",
     stateOfflineDetail: "Confira se ele está ligado e no Wi-Fi. Assim que voltar, ele atualiza sozinho, não precisa fazer nada aqui.",
+    stateOfflineDetailAuto: "Confira se ele está ligado e no Wi-Fi. Se ele mudou de IP, vai ser encontrado na rede sozinho.",
     stateUnsupported: "O aparelho neste IP não é um display compatível",
-    stateUnsupportedDetail: "O display pode ter mudado de IP. Use \"Trocar de display\" para encontrá-lo de novo.",
+    stateUnsupportedDetail: "O display provavelmente mudou de IP. Use \"Alterar IP\" no cartão Display.",
+    stateSearching: "Procurando o display na rede…",
+    stateSearchingDetail: "Ele provavelmente mudou de IP. Isso leva alguns segundos.",
+    testNow: "Testar conexão",
+    testingNow: "Testando {host}…",
+    testOk: "O display respondeu em {host}.",
+    testUnreachable: "{host} não respondeu.",
+    testUnsupported: "{host} respondeu, mas não é um display compatível.",
+    testSearching: "Procurando na rede agora…",
+    changeIp: "Alterar IP",
+    changeIpLabel: "O mesmo display ganhou outro endereço? Digite aqui. Ele aparece na tela do display logo depois de ligar.",
+    save: "Salvar",
+    savingIp: "Conectando…",
+    ipChanged: "Pronto: o display agora está em {host}.",
+    autoFind: "Encontrar o display se o IP mudar",
+    autoFindHint: "Quando ele parar de responder, procura na rede. Ele é reconhecido pelo painel que já está salvo nele.",
     nowOnScreen: "Na tela agora",
     usage: "Uso",
     session: "Sessão de 5 horas",
@@ -210,6 +242,11 @@ const state = {
   installing: false,
   confirmHandBack: false,
   serviceDown: false,
+  editingIp: false,
+  ipDraft: "",
+  ipSaving: false,
+  ipResult: null,
+  testingNow: false,
 };
 
 let uiLang = pickLang();
@@ -305,8 +342,9 @@ async function refresh() {
     state.view = state.status.configured ? "dashboard" : "wizard";
     state.panelLang = state.status.configured ? state.status.lang : uiLang;
   }
-  // Re-render the wizard only on the login step: elsewhere it would reset what is being typed.
-  if (state.view === "dashboard" || state.step === 1 || state.serviceDown) render();
+  // Never re-render under the user's fingers: it would reset what is being typed.
+  const typing = state.view === "dashboard" ? state.editingIp : state.step !== 1;
+  if (!typing || state.serviceDown) render();
 }
 
 // ------------------------------------------------------------------- views
@@ -485,15 +523,25 @@ function banner() {
   const map = {
     online: ["ok", "stateOnline", t("stateOnlineDetail", { time: time(d.pushed_at) })],
     connecting: ["", "stateConnecting", t("stateConnectingDetail")],
-    offline: ["warn", "stateOffline", t("stateOfflineDetail")],
+    searching: ["warn", "stateSearching", t("stateSearchingDetail")],
+    offline: ["warn", "stateOffline", t(state.status.auto_find ? "stateOfflineDetailAuto" : "stateOfflineDetail")],
     unsupported: ["danger", "stateUnsupported", t("stateUnsupportedDetail")],
   };
   const [cls, title, detail] = map[d.state] || map.connecting;
+  const retry = d.state === "offline" || d.state === "unsupported" ? `
+      <div style="margin-left:auto">${testButton()}</div>` : "";
   return `
     <div class="banner">
       <span class="dot ${cls}"></span>
       <div><strong>${esc(t(title))}</strong><span class="muted small">${esc(detail)}</span></div>
+      ${retry}
     </div>`;
+}
+
+function testButton() {
+  return state.testingNow
+    ? `<span class="row muted small"><span class="spinner"></span>${esc(t("testingNow", { host: state.status.host }))}</span>`
+    : `<button class="btn" data-action="test-now">${esc(t("testNow"))}</button>`;
 }
 
 function meter(label, win) {
@@ -529,17 +577,41 @@ function displayCard() {
     <div class="card">
       <h2>${esc(t("display"))}</h2>
       <dl class="facts">
-        <dt>${esc(t("address"))}</dt><dd>${esc(s.host)}</dd>
+        <dt>${esc(t("address"))}</dt>
+        <dd>${esc(s.host)}${state.editingIp ? "" : `
+          <button class="btn link" style="margin-left:8px" data-action="edit-ip">${esc(t("changeIp"))}</button>`}</dd>
         <dt>${esc(t("firmware"))}</dt><dd>${esc(s.display.firmware || "—")}</dd>
         <dt>${esc(t("lastUpdate"))}</dt><dd>${esc(s.display.pushed_at ? time(s.display.pushed_at) : t("never"))}</dd>
       </dl>
+      ${state.editingIp ? ipForm() : ""}
       <div class="row" style="margin-top:16px">
+        ${testButton()}
         <button class="btn" data-action="change-display">${esc(t("changeDisplay"))}</button>
         <button class="btn danger ${state.confirmHandBack ? "confirm" : ""}" data-action="hand-back"
           title="${esc(t("handBackHint"))}">${esc(state.confirmHandBack ? t("handBackConfirm") : t("handBack"))}</button>
       </div>
       <p class="muted small" style="margin:8px 0 0">${esc(t("handBackHint"))}</p>
     </div>`;
+}
+
+function ipForm() {
+  let result = "";
+  if (state.ipSaving) {
+    result = `<p class="row muted"><span class="spinner"></span>${esc(t("savingIp"))}</p>`;
+  } else if (state.ipResult && state.ipResult.reason === "unsupported") {
+    result = `<div class="note danger"><strong>${esc(t("unsupported", state.ipResult))}</strong>${esc(t("unsupportedHow"))}</div>`;
+  } else if (state.ipResult) {
+    result = `<div class="note warn"><strong>${esc(t("unreachable", state.ipResult))}</strong>${esc(t("unreachableHow"))}</div>`;
+  }
+  return `
+    <form class="row" data-form="host" style="margin-top:16px">
+      <label for="new-host" class="small" style="flex-basis:100%">${esc(t("changeIpLabel"))}</label>
+      <input type="text" id="new-host" inputmode="decimal" autocomplete="off"
+        placeholder="${esc(t("ipPlaceholder"))}" value="${esc(state.ipDraft)}">
+      <button class="btn primary" type="submit" ${state.ipSaving ? "disabled" : ""}>${esc(t("save"))}</button>
+      <button class="btn" type="button" data-action="cancel-ip" ${state.ipSaving ? "disabled" : ""}>${esc(t("cancel"))}</button>
+    </form>
+    ${result}`;
 }
 
 function preferencesCard() {
@@ -559,6 +631,11 @@ function preferencesCard() {
         <div><p><strong>${esc(t("showIp"))}</strong></p><p class="muted small">${esc(t("showIpHint"))}</p></div>
         <label class="switch"><input type="checkbox" role="switch" aria-label="${esc(t("showIp"))}"
           data-change="show-ip" ${s.show_ip ? "checked" : ""}><span></span></label>
+      </div>
+      <div class="setting">
+        <div><p><strong>${esc(t("autoFind"))}</strong></p><p class="muted small">${esc(t("autoFindHint"))}</p></div>
+        <label class="switch"><input type="checkbox" role="switch" aria-label="${esc(t("autoFind"))}"
+          data-change="auto-find" ${s.auto_find ? "checked" : ""}><span></span></label>
       </div>
       <div class="setting">
         <div><p><strong>${esc(t("autostart"))}</strong></p><p class="muted small">${esc(autoHint)}</p></div>
@@ -640,6 +717,38 @@ const actions = {
     }
   },
 
+  "test-now": async () => {
+    state.testingNow = true;
+    render();
+    try {
+      const r = await api("/api/test-connection", {});
+      if (r.ok) {
+        toast(t("testOk", r));
+      } else {
+        const msg = t(r.reason === "unsupported" ? "testUnsupported" : "testUnreachable", r);
+        toast(r.searching ? `${msg} ${t("testSearching")}` : msg, true);
+      }
+    } catch (err) {
+      toast(t("error", { msg: err.message }), true);
+    } finally {
+      state.testingNow = false;
+      await refresh();
+      render();
+    }
+  },
+
+  "edit-ip": () => {
+    Object.assign(state, { editingIp: true, ipDraft: state.status.host || "", ipResult: null });
+    render();
+    const input = document.getElementById("new-host");
+    if (input) { input.focus(); input.select(); }
+  },
+
+  "cancel-ip": () => {
+    Object.assign(state, { editingIp: false, ipResult: null });
+    render();
+  },
+
   "change-display": () => {
     Object.assign(state, { view: "wizard", step: 2, test: null, scan: null, host: "", panelLang: state.status.lang });
     render();
@@ -665,6 +774,29 @@ const actions = {
   },
 };
 
+async function saveHost(host) {
+  state.ipDraft = host.trim();
+  if (!state.ipDraft) return;
+  state.ipSaving = true;
+  state.ipResult = null;
+  render();
+  try {
+    const result = await api("/api/host", { host: state.ipDraft });
+    if (result.ok) {
+      state.editingIp = false;
+      toast(t("ipChanged", result));
+    } else {
+      state.ipResult = result;
+    }
+  } catch (err) {
+    toast(t("error", { msg: err.message }), true);
+  } finally {
+    state.ipSaving = false;
+    await refresh();
+    render();
+  }
+}
+
 async function saveSettings(settings) {
   try {
     await api("/api/settings", settings);
@@ -683,6 +815,7 @@ const changes = {
   "wizard-autostart": (el) => { state.autostart = el.checked; },
   "settings-lang": (el) => saveSettings({ lang: el.value }),
   "show-ip": (el) => saveSettings({ show_ip: el.checked }),
+  "auto-find": (el) => saveSettings({ auto_find: el.checked }),
   autostart: async (el) => {
     try {
       await api("/api/autostart", { enabled: el.checked });
@@ -706,12 +839,16 @@ app.addEventListener("change", (e) => {
 
 app.addEventListener("input", (e) => {
   if (e.target.id === "host") state.host = e.target.value;
+  if (e.target.id === "new-host") state.ipDraft = e.target.value;
 });
 
 app.addEventListener("submit", (e) => {
   if (e.target.dataset.form === "test") {
     e.preventDefault();
     testHost(new FormData(e.target).get("host") || "");
+  } else if (e.target.dataset.form === "host") {
+    e.preventDefault();
+    saveHost(state.ipDraft);
   }
 });
 

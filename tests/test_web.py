@@ -46,6 +46,14 @@ def test_post_actions_change_settings(server):
     assert "unsupported language" in resp.json()["error"]
 
 
+def test_change_ip_from_the_page(server):
+    web, service = server
+    service.setup("10.0.0.102", "en")
+    resp = requests.post(web.url + "api/host", json={"host": "10.0.0.103"}, timeout=5)
+    assert resp.json()["ok"] is True
+    assert service.config.host == "10.0.0.103"
+
+
 def test_other_websites_cannot_drive_the_service(server):
     web, service = server
     # DNS rebinding: a foreign hostname pointing at 127.0.0.1.

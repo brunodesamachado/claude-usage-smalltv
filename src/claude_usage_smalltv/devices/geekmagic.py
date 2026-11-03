@@ -35,6 +35,9 @@ class GeekMagicDevice(HttpDevice):
     def push(self, jpeg: bytes) -> None:
         self.post_file("/doUpload", PANEL_FILENAME, jpeg, "image/jpeg", dir=IMAGE_DIR)
 
+    def has_panel(self) -> None:
+        return None  # no known endpoint lists the stored images on the stock firmware
+
     def setup(self) -> dict[str, Any]:
         try:
             theme = self.get_json("/app.json").get("theme")

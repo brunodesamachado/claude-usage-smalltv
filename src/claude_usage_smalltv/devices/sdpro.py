@@ -33,6 +33,10 @@ class SdProDevice(HttpDevice):
     def push(self, jpeg: bytes) -> None:
         self.post_file("/photo/upload", PANEL_FILENAME, jpeg, "image/jpeg")
 
+    def has_panel(self) -> bool:
+        photos = self.get_json("/photo/list").get("files", [])
+        return any(f.get("name") == PANEL_FILENAME for f in photos)
+
     def current_theme(self) -> int | None:
         # /config also returns the Wi-Fi SSID and password in clear text: keep one key only.
         theme = self.get_json("/config").get("theme")

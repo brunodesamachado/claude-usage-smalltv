@@ -25,7 +25,7 @@ from claude_usage_smalltv.config import Config, load_config, save_config
 from claude_usage_smalltv.credentials import CredentialsError, load_token
 from claude_usage_smalltv.daemon import Daemon
 from claude_usage_smalltv.devices import Device, DeviceError, DeviceUnreachable, connect
-from claude_usage_smalltv.discovery import scan
+from claude_usage_smalltv.discovery import Host, scan
 from claude_usage_smalltv.paths import backup_file
 from claude_usage_smalltv.render import LABELS, Renderer, to_jpeg
 from claude_usage_smalltv.usage import UsageClient, Window
@@ -34,6 +34,8 @@ log = logging.getLogger(__name__)
 
 RECONNECT_S = 60  # display off or asleep
 UNSUPPORTED_RETRY_S = 600  # answered with an unknown firmware: unlikely to change soon
+SEARCH_AFTER_S = 120  # lost this long: it may have a new IP, look for it on the network
+SEARCH_EVERY_S = 600  # a /24 scan is cheap but not free: at most this often while lost
 
 
 class ServiceError(RuntimeError):
@@ -50,6 +52,13 @@ def install_panel(device: Device, host: str, jpeg: bytes) -> tuple[Path, bool]:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
     return path, True
+
+
+def move_backup(old_host: str, new_host: str) -> None:
+    """Backups are kept per address: follow the display when its IP changes."""
+    old, new = backup_file(old_host), backup_file(new_host)
+    if old != new and old.exists() and not new.exists():
+        old.replace(new)
 
 
 def uninstall_panel(device: Device, host: str) -> bool:
@@ -100,10 +109,12 @@ class Service:
         connector: Callable[[str], Device] = lambda host: connect(host, timeout=10, retries=2),
         autostart: Autostart | None = None,
         clock: Callable[[], float] = time.time,
+        scanner: Callable[[], list[Host]] = scan,
     ) -> None:
         self._config_path = config_path
         self.config = load_config(config_path)
         self._connect = connector
+        self._scanner = scanner
         self.autostart = autostart or Autostart()
         self._clock = clock
         self.daemon = Daemon(
@@ -121,6 +132,10 @@ class Service:
         self._next_connect = 0.0
         self._connect_state: str | None = None  # "offline" | "unsupported" while unconnected
         self._connect_error: str | None = None
+        self._lost_since: float | None = None  # when the configured display stopped answering
+        self._next_search = 0.0
+        self._searching = False
+        self._search_now = False  # asked from the page: skip the waiting period once
         self._login: tuple[float, dict[str, Any]] | None = None
         self._apply_config()
 
@@ -168,22 +183,32 @@ class Service:
             if host is None or self.daemon.device is not None:
                 return False
             now = self._clock()
-            if now < self._next_connect:
-                return False
-        try:
-            device = self._connect(host)
-        except DeviceUnreachable as exc:
-            self._unconnected("offline", str(exc), now + RECONNECT_S, host)
-            return False
-        except DeviceError as exc:
-            self._unconnected("unsupported", str(exc), now + UNSUPPORTED_RETRY_S, host)
-            return False
+            probe = now >= self._next_connect
+        if probe:
+            try:
+                device = self._connect(host)
+            except DeviceUnreachable as exc:
+                self._unconnected("offline", str(exc), now + RECONNECT_S, host)
+            except DeviceError as exc:
+                # Often another device that got the display's old IP from the router.
+                self._unconnected("unsupported", str(exc), now + UNSUPPORTED_RETRY_S, host)
+            else:
+                return self._use(host, device, f"connected to {device.firmware} at {host}")
+        if self._search_due(now):
+            return self._search(host, now)
+        return False
+
+    def _use(self, host: str, device: Device, message: str, old_host: str | None = None) -> bool:
+        """Make `device` (at `host`) the display being updated, unless the page changed it."""
         with self._lock:
-            if self.config.host != host or self.daemon.device is not None:
+            expected = old_host or host
+            if self.config.host != expected or self.daemon.device is not None:
                 return False  # the page set up another display meanwhile
-            self.daemon.device, self._device_host = device, host
-            self._connect_state = self._connect_error = None
-        log.info("connected to %s at %s", device.firmware, host)
+            if old_host:
+                move_backup(old_host, host)
+                self._save(replace(self.config, host=host))
+            self._switch_to(host, device)
+        log.info("%s", message)
         return True
 
     def _unconnected(
@@ -196,6 +221,43 @@ class Service:
                 log.warning("display: %s", error)
             self._connect_state, self._connect_error = state, error
             self._next_connect = retry_at
+            if self._lost_since is None:
+                self._lost_since = self._clock()
+
+    def _search_due(self, now: float) -> bool:
+        if not self.config.auto_find or self._lost_since is None:
+            return False
+        if self._search_now:
+            return True
+        return now - self._lost_since >= SEARCH_AFTER_S and now >= self._next_search
+
+    def _search(self, host: str, now: float) -> bool:
+        """Look for our display at another address: a SmallTV that already holds the panel."""
+        self._next_search = now + SEARCH_EVERY_S
+        self._search_now = False
+        self._searching = True
+        log.info("display: looking for it on the network, it may have a new IP")
+        try:
+            found = None
+            for candidate in self._scanner():
+                if candidate.ip == host:
+                    continue
+                try:
+                    device = self._connect(candidate.ip)
+                    if device.has_panel():
+                        found = candidate.ip, device
+                        break
+                except DeviceError:
+                    continue
+        finally:
+            self._searching = False
+        if found is None:
+            log.info("display: not found on the network, will look again in a few minutes")
+            return False
+        new_host, device = found
+        return self._use(
+            new_host, device, f"display found at a new IP: {host} -> {new_host}", old_host=host
+        )
 
     # ------------------------------------------------------------------ status
 
@@ -208,6 +270,7 @@ class Service:
             "host": self.config.host,
             "lang": self.config.lang,
             "show_ip": self.config.show_ip,
+            "auto_find": self.config.auto_find,
             "languages": sorted(LABELS),
             "display": self._display_status(),
             "login": self._login_status(),
@@ -230,6 +293,8 @@ class Service:
         d = self.daemon
         if self.config.host is None:
             state, error = "none", None
+        elif d.device is None and self._searching:
+            state, error = "searching", self._connect_error
         elif d.device is None:
             state, error = self._connect_state or "connecting", self._connect_error
         elif d.display_error:
@@ -274,7 +339,8 @@ class Service:
     # ----------------------------------------------------------------- actions
 
     def scan(self) -> list[dict[str, Any]]:
-        return [{"ip": h.ip, "title": h.title, "smalltv": h.looks_like_smalltv} for h in scan()]
+        hosts = self._scanner()
+        return [{"ip": h.ip, "title": h.title, "smalltv": h.looks_like_smalltv} for h in hosts]
 
     def test(self, host: str) -> dict[str, Any]:
         host = self._clean_host(host)
@@ -295,19 +361,77 @@ class Service:
         except DeviceError as exc:
             raise ServiceError(str(exc)) from exc
         with self._lock:
-            frame = replace(
-                self.daemon.frame(self._clock()), ip=host if self.config.show_ip else None
-            )
             try:
-                _, created = install_panel(device, host, to_jpeg(Renderer(lang).render(frame)))
+                _, created = install_panel(device, host, self._first_frame(host, lang))
             except DeviceError as exc:
                 raise ServiceError(str(exc)) from exc
             self._save(replace(self.config, host=host, lang=lang))
-            self.daemon.device, self._device_host = device, host
-            self._connect_state = self._connect_error = None
+            self._switch_to(host, device)
         log.info("panel set up on %s at %s", device.firmware, host)
         self.wake()
         return {"ok": True, "firmware": device.firmware, "backup_created": created}
+
+    def change_host(self, host: str) -> dict[str, Any]:
+        """The same display at a new IP: switch to it without running the setup again."""
+        old, host = self.config.host, self._clean_host(host)
+        if old is None:
+            raise ServiceError("no display is set up yet")
+        try:
+            device = self._connect(host)
+            has_panel = device.has_panel()
+        except DeviceUnreachable:
+            return {"ok": False, "reason": "unreachable", "host": host}
+        except DeviceError:
+            return {"ok": False, "reason": "unsupported", "host": host}
+        with self._lock:
+            move_backup(old, host)
+            if has_panel is False:  # another display, or its photos were reset: set it up
+                try:
+                    install_panel(device, host, self._first_frame(host, self.config.lang))
+                except DeviceError as exc:
+                    raise ServiceError(str(exc)) from exc
+            self._save(replace(self.config, host=host))
+            self._switch_to(host, device)
+        log.info("display address changed: %s -> %s", old, host)
+        self.wake()
+        return {"ok": True, "host": host, "firmware": device.firmware}
+
+    def test_connection(self) -> dict[str, Any]:
+        """The page's "Test connection": probe the display now instead of at the next retry."""
+        host = self.config.host
+        if host is None:
+            raise ServiceError("no display is set up yet")
+        try:
+            device = self._connect(host)
+        except DeviceError as exc:
+            unreachable = isinstance(exc, DeviceUnreachable)
+            now = self._clock()
+            if unreachable:
+                self._unconnected("offline", str(exc), now + RECONNECT_S, host)
+            else:
+                self._unconnected("unsupported", str(exc), now + UNSUPPORTED_RETRY_S, host)
+            searching = self.config.auto_find
+            if searching:  # look for it on the network right away, not in a few minutes
+                self._search_now = True
+                self.wake()
+            reason = "unreachable" if unreachable else "unsupported"
+            return {"ok": False, "reason": reason, "host": host, "searching": searching}
+        with self._lock:
+            if self.daemon.device is None and self.config.host == host:
+                self._switch_to(host, device)
+                log.info("connected to %s at %s (tested from the page)", device.firmware, host)
+        self.wake()  # push a frame now
+        return {"ok": True, "host": host, "firmware": device.firmware}
+
+    def _first_frame(self, host: str, lang: str) -> bytes:
+        frame = replace(self.daemon.frame(self._clock()), ip=host if self.config.show_ip else None)
+        return to_jpeg(Renderer(lang).render(frame))
+
+    def _switch_to(self, host: str | None, device: Device | None) -> None:
+        self.daemon.device, self._device_host = device, host
+        self._connect_state = self._connect_error = None
+        self._lost_since = None
+        self._next_connect = 0.0
 
     def restore(self) -> dict[str, Any]:
         host = self.config.host
@@ -320,16 +444,19 @@ class Service:
             except DeviceError as exc:
                 raise ServiceError(str(exc)) from exc
             self._save(replace(self.config, host=None))
-            self.daemon.device, self._device_host = None, None
+            self._switch_to(None, None)
         log.info("display at %s handed back (previous photos restored: %s)", host, restored)
         return {"ok": True, "restored": restored}
 
     def update_settings(
-        self, lang: str | None = None, show_ip: bool | None = None
+        self,
+        lang: str | None = None,
+        show_ip: bool | None = None,
+        auto_find: bool | None = None,
     ) -> dict[str, Any]:
         if lang is not None and lang not in LABELS:
             raise ServiceError(f"unsupported language {lang!r}")
-        given = (("lang", lang), ("show_ip", show_ip))
+        given = (("lang", lang), ("show_ip", show_ip), ("auto_find", auto_find))
         with self._lock:
             self._save(replace(self.config, **{k: v for k, v in given if v is not None}))
         self.wake()
