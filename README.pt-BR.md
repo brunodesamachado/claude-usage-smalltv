@@ -56,12 +56,9 @@ Veja quanto resta da sessão de 5 horas e do limite semanal com uma olhada, sem 
 
 O painel roda no **GeekMagic SmallTV**, um display Wi-Fi de 240×240 do tamanho de um cubo de açúcar.
 
-<!-- Troque YOUR-PURCHASE-LINK pelo seu link de loja ou de afiliado. -->
-**➡️ [Comprar o GeekMagic SmallTV Ultra](https://YOUR-PURCHASE-LINK)**
+**➡️ [Comprar o GeekMagic SmallTV Ultra](https://s.click.aliexpress.com/e/_c3WKJDwx)**
 
-<!-- Se for link de afiliado, mantenha o aviso:
 <sub>Link de afiliado: comprando por ele você apoia o projeto sem pagar nada a mais.</sub>
--->
 
 | Firmware do display | Situação |
 | --- | --- |
