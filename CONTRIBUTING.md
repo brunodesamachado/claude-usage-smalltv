@@ -35,6 +35,8 @@ src/claude_usage_smalltv/
 ├── web/             the page itself: index.html, app.js, style.css (no build step)
 ├── config.py        saved settings (config.json)
 ├── autostart.py     start at logon: Task Scheduler, launchd, systemd
+├── tray.py          Windows notification-area icon (pystray, imported lazily)
+├── icon.py          the pixel mascot: .exe icon and tray icon
 ├── discovery.py     LAN scan
 └── cli.py           argparse entry point; no command = service + page
 ```

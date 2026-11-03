@@ -29,6 +29,7 @@ See how much of your 5-hour session and weekly limit you have left at a glance, 
 - **No firmware flashing.** It talks to the display's stock web API over your Wi-Fi.
 - **Polite to the API.** Usage is fetched every 5 minutes with exponential backoff on HTTP 429, while the clock still ticks every minute.
 - **Keeps going on its own.** If the display is unplugged or drops off the Wi-Fi, the panel comes back by itself as soon as the display does.
+- **Lives next to the clock (Windows).** The mascot in the notification area shows a status light (green: up to date, amber: display not answering, red: needs you) and your usage on hover. A click opens the settings page; right-click to test the connection, start with Windows or quit.
 - **Follows the display when its IP changes.** If the router gives it a new address, it is found on the network by itself, recognised by the panel already stored on it. You can also change the IP on the page.
 - **Reversible.** Setup saves the display's previous photos and theme; one click puts them back.
 - **English or Portuguese**, both the panel and the page.
@@ -125,7 +126,7 @@ Double-click `claude-usage-smalltv.exe`, or run `claude-usage-smalltv` if you in
 <details open>
 <summary><b>5. Day to day</b></summary>
 
-Nothing to do: the clock updates every minute and the usage every 5 minutes. Open **http://127.0.0.1:8765** any time (bookmark it) to:
+Nothing to do: the clock updates every minute and the usage every 5 minutes. On Windows, the mascot next to the clock shows how things are; click it (or open **http://127.0.0.1:8765**, bookmark it) to:
 
 - see whether the display is up to date, what it shows right now and your usage;
 - change the panel language, start with the computer, or **show the display's IP** in small print under the logo;
@@ -136,7 +137,7 @@ Nothing to do: the clock updates every minute and the usage every 5 minutes. Ope
 
 ## 🔄 Updating
 
-**Windows `.exe`**: download the new version from the [latest release](../../releases/latest). Before replacing the old file, close the running copy: Task Manager → **Details** → `claude-usage-smalltv.exe` → **End task**. Then put the new file in the same place and double-click it.
+**Windows `.exe`**: download the new version from the [latest release](../../releases/latest). Before replacing the old file, close the running copy: right-click the mascot next to the clock → **Quit**. (Versions before 0.4 have no icon: Task Manager → **Details** → `claude-usage-smalltv.exe` → **End task**.) Then put the new file in the same place and double-click it.
 
 **pipx**: run `pipx upgrade claude-usage-smalltv`, then restart the service:
 
@@ -150,7 +151,7 @@ Your settings are kept: they live in `config.json`, outside the program (see [Co
 
 ## 🔁 Start automatically
 
-Use the **Start with the computer** switch on the settings page. It registers the service for your next sign-in (it never starts a second copy next to the running one):
+Use the **Start with Windows** item in the mascot's menu, or the **Start with the computer** switch on the settings page (called "Start with Windows" there too, on Windows). It registers the service for your next sign-in (it never starts a second copy next to the running one):
 
 | System | What the switch creates |
 | --- | --- |
@@ -210,6 +211,7 @@ The page saves its settings to `config.json` in the app's folder: `%LOCALAPPDATA
 | `--lang en\|pt` or `CLAUDE_USAGE_LANG` | the saved one, else `en` | Panel language |
 | `run --port PORT` | `8765` | Port of the settings page |
 | `run --no-web` | — | Don't serve the settings page |
+| `run --no-tray` | — | No icon in the notification area (Windows) |
 | `run --open` | — | Open the settings page in the browser (what happens when no command is given) |
 | `run --usage-interval SECONDS` | `300` | How often to fetch usage. Lower values risk HTTP 429. |
 | `run --once` | — | Push one frame and exit (handy for cron) |
@@ -227,6 +229,7 @@ Command-line values win over the saved ones, and are saved too.
 | The display got a new IP | Usually nothing to do: within a few minutes it is found on the network by itself (click **Test connection** to look right away). You can also click **Change IP** in the Display card. Reserving the IP in your router avoids it, and **Show the IP on the display** keeps it visible. |
 | Search doesn't find the display | It may be asleep. Type the IP shown on its screen right after power-on. |
 | "Windows protected your PC" | The `.exe` is not code-signed: **More info → Run anyway**. |
+| I can't see the mascot next to the clock | Windows may have hidden it under the **^** arrow: drag it to the taskbar, or turn it on in **Settings → Personalization → Taskbar → Other system tray icons**. |
 | The page doesn't open | The service may not be running: open the `.exe` (or `claude-usage-smalltv`) again. If port 8765 is taken, use `run --port 8766`. |
 | Timeouts, several seconds per request | Normal for the ESP8266. Move it closer to the router and use a 5 V / 1 A charger. The tool retries automatically. |
 | Amber footer "data from 14:07 · retrying" | The usage API is rate limiting (HTTP 429). Last known numbers stay on screen; it recovers on its own. Other tools polling `/usage` count too. |

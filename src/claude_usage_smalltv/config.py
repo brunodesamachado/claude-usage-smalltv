@@ -29,7 +29,8 @@ def config_file() -> Path:
 def load_config(path: Path | None = None) -> Config:
     path = path or config_file()
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
+        # utf-8-sig: Notepad and Windows PowerShell 5 save UTF-8 with a BOM.
+        raw = json.loads(path.read_text(encoding="utf-8-sig"))
     except FileNotFoundError:
         return Config()
     except (OSError, ValueError) as exc:

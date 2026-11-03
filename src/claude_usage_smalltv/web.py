@@ -48,16 +48,20 @@ class Handler(BaseHTTPRequestHandler):
         if not self._trusted_host():
             return
         url = urlsplit(self.path)
-        if url.path in STATIC:
-            name, content_type = STATIC[url.path]
-            self._send(HTTPStatus.OK, static_file(name), content_type)
-        elif url.path == "/api/status":
-            self._json(HTTPStatus.OK, self.service.status())
-        elif url.path == "/api/preview.png":
-            lang = parse_qs(url.query).get("lang", [None])[0]
-            self._send(HTTPStatus.OK, self.service.preview_png(lang), "image/png")
-        else:
-            self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+        try:
+            if url.path in STATIC:
+                name, content_type = STATIC[url.path]
+                self._send(HTTPStatus.OK, static_file(name), content_type)
+            elif url.path == "/api/status":
+                self._json(HTTPStatus.OK, self.service.status())
+            elif url.path == "/api/preview.png":
+                lang = parse_qs(url.query).get("lang", [None])[0]
+                self._send(HTTPStatus.OK, self.service.preview_png(lang), "image/png")
+            else:
+                self._json(HTTPStatus.NOT_FOUND, {"error": "not found"})
+        except Exception:
+            log.exception("web: %s failed", self.path)
+            self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "unexpected error, see log"})
 
     def do_POST(self) -> None:
         if not self._trusted_host() or not self._trusted_post():

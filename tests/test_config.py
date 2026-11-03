@@ -14,6 +14,12 @@ def test_missing_or_broken_file_falls_back_to_defaults(tmp_path):
     assert load_config(broken) == Config()
 
 
+def test_a_file_saved_by_notepad_with_a_bom_is_read(tmp_path):
+    path = tmp_path / "config.json"
+    path.write_text('{"host": "10.0.0.101", "lang": "pt"}', encoding="utf-8-sig")
+    assert load_config(path) == Config(host="10.0.0.101", lang="pt")
+
+
 def test_unknown_keys_from_newer_versions_are_ignored(tmp_path):
     path = tmp_path / "config.json"
     path.write_text('{"host": "x", "theme": "neon"}', encoding="utf-8")

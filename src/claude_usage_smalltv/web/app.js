@@ -47,6 +47,7 @@ const I18N = {
     confirm2: "Your other photos are only hidden, never deleted. The previous settings are saved so you can undo everything later.",
     confirm3: "From now on, the clock updates every minute and the usage every 5 minutes.",
     autostartLabel: "Start automatically when I sign in to this computer",
+    autostartLabelWin: "Start automatically with Windows",
     autostartHint: "Recommended. Without it, the display stops updating when you close this program.",
     install: "Put the panel on the display",
     installing: "Setting up the display…",
@@ -103,6 +104,7 @@ const I18N = {
     showIp: "Show the IP on the display",
     showIpHint: "In small print under the logo, so you always know the display's address.",
     autostart: "Start with the computer",
+    autostartWin: "Start with Windows",
     autostartOn: "The panel keeps updating after a restart.",
     autostartOff: "The panel only updates while this program is open.",
     autostartUnsupported: "Not available on this system.",
@@ -155,6 +157,7 @@ const I18N = {
     confirm2: "Suas outras fotos só ficam ocultas, nunca são apagadas. As configurações anteriores ficam salvas para você desfazer tudo depois.",
     confirm3: "A partir daí, o relógio atualiza a cada minuto e o uso a cada 5 minutos.",
     autostartLabel: "Iniciar sozinho quando eu entrar neste computador",
+    autostartLabelWin: "Iniciar sozinho junto com o Windows",
     autostartHint: "Recomendado. Sem isso, o display para de atualizar quando você fechar este programa.",
     install: "Colocar o painel no display",
     installing: "Configurando o display…",
@@ -210,6 +213,7 @@ const I18N = {
     showIp: "Mostrar o IP no display",
     showIpHint: "Em letra pequena, debaixo do logo, para você sempre saber o endereço do display.",
     autostart: "Iniciar com o computador",
+    autostartWin: "Iniciar com o Windows",
     autostartOn: "O painel continua atualizando depois de reiniciar o computador.",
     autostartOff: "O painel só atualiza enquanto este programa estiver aberto.",
     autostartUnsupported: "Não disponível neste sistema.",
@@ -297,6 +301,11 @@ function resetText(win) {
     return t("resetsIn", { h: Math.floor(minutes / 60), m: String(minutes % 60).padStart(2, "0") });
   }
   return t("resetsOn", { day: t("weekdays")[at.getDay()], time: time(win.resets_at) });
+}
+
+// Windows users know "Start with Windows" better than "Start with the computer".
+function winKey(key) {
+  return state.status && state.status.autostart.windows ? `${key}Win` : key;
 }
 
 function level(pct) {
@@ -476,7 +485,7 @@ function stepConfirm() {
   const autostart = state.status.autostart.supported ? `
     <label class="check">
       <input type="checkbox" data-change="wizard-autostart" ${state.autostart ? "checked" : ""}>
-      <span><strong>${esc(t("autostartLabel"))}</strong><br>
+      <span><strong>${esc(t(winKey("autostartLabel")))}</strong><br>
         <span class="muted small">${esc(t("autostartHint"))}</span></span>
     </label>` : "";
   const busy = state.installing
@@ -638,8 +647,8 @@ function preferencesCard() {
           data-change="auto-find" ${s.auto_find ? "checked" : ""}><span></span></label>
       </div>
       <div class="setting">
-        <div><p><strong>${esc(t("autostart"))}</strong></p><p class="muted small">${esc(autoHint)}</p></div>
-        <label class="switch"><input type="checkbox" role="switch" aria-label="${esc(t("autostart"))}"
+        <div><p><strong>${esc(t(winKey("autostart")))}</strong></p><p class="muted small">${esc(autoHint)}</p></div>
+        <label class="switch"><input type="checkbox" role="switch" aria-label="${esc(t(winKey("autostart")))}"
           data-change="autostart" ${auto.enabled ? "checked" : ""} ${auto.supported ? "" : "disabled"}><span></span></label>
       </div>
     </div>`;

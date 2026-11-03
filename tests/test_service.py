@@ -91,6 +91,7 @@ class Network:
 
 class FakeAutostart:
     supported = True
+    platform = "linux"
 
     def __init__(self) -> None:
         self.enabled = False
@@ -231,7 +232,7 @@ def test_settings_and_autostart_are_applied(tmp_path):
     with pytest.raises(ServiceError):
         service.update_settings("klingon")
     assert service.set_autostart(True) == {"ok": True, "enabled": True}
-    assert service.status()["autostart"] == {"supported": True, "enabled": True}
+    assert service.status()["autostart"] == {"supported": True, "enabled": True, "windows": False}
 
 
 # ------------------------------------------------------------- the display's IP changes

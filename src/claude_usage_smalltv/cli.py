@@ -30,6 +30,7 @@ from claude_usage_smalltv.discovery import scan
 from claude_usage_smalltv.paths import backup_file, state_dir
 from claude_usage_smalltv.render import LABELS, Frame, Renderer, to_jpeg
 from claude_usage_smalltv.service import Service, install_panel, uninstall_panel
+from claude_usage_smalltv.tray import Tray
 from claude_usage_smalltv.usage import RateLimited, UsageClient, UsageError
 from claude_usage_smalltv.web import DEFAULT_PORT, WebServer
 
@@ -196,6 +197,14 @@ def cmd_run(args: argparse.Namespace) -> int:
         log.info("settings page: %s", web.url)
         if args.open:
             webbrowser.open(web.url)
+    tray = None
+    if not args.no_tray and Tray.supported():
+        tray = Tray(service, web.url if web else None, on_quit=service.stop)
+        try:
+            tray.start()
+        except Exception:  # e.g. no desktop session: keep updating the display anyway
+            log.warning("could not show the tray icon", exc_info=True)
+            tray = None
     if service.config.host is None:
         log.info("no display set up yet: open the settings page to add one")
     try:
@@ -203,6 +212,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     except KeyboardInterrupt:
         log.info("stopped")
     finally:
+        if tray:
+            tray.stop()
         if web:
             web.close()
     return 0
@@ -290,6 +301,7 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"settings page port (default {DEFAULT_PORT})",
     )
     p.add_argument("--no-web", action="store_true", help="do not serve the settings page")
+    p.add_argument("--no-tray", action="store_true", help="no notification-area icon (Windows)")
     p.add_argument("--open", action="store_true", help="open the settings page in the browser")
     p.set_defaults(func=cmd_run)
 

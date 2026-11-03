@@ -285,8 +285,21 @@ class Service:
             "autostart": {
                 "supported": self.autostart.supported,
                 "enabled": self._autostart_enabled(),
+                "windows": self.autostart.platform == "win32",  # "Start with Windows"
             },
             "activity": list(reversed(self.recent.records)),
+        }
+
+    def brief(self) -> dict[str, Any]:
+        """The few fields the tray shows, cheap enough to read every few seconds."""
+        usage = self.daemon.usage
+        return {
+            "state": self._display_status()["state"],
+            "host": self.config.host,
+            "lang": self.config.lang,
+            "session": usage.session.percent if usage and usage.session else None,
+            "weekly": usage.weekly.percent if usage and usage.weekly else None,
+            "problem": self.daemon.problem,
         }
 
     def _display_status(self) -> dict[str, Any]:

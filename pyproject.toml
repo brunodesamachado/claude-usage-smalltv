@@ -25,6 +25,8 @@ classifiers = [
 dependencies = [
     "requests>=2.31",
     "pillow>=10.1",
+    # Notification-area icon; Windows only, so macOS and Linux skip its native bindings.
+    "pystray>=0.19; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
