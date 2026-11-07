@@ -54,6 +54,7 @@ LABELS: dict[str, dict[str, object]] = {
         "stale": "data from {t} · retrying",
         "problem_login": "sign in: run `claude`",
         "problem_usage": "usage unavailable",
+        "problem_limited": "rate limited · retrying",
         "weekdays": ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
     },
     "pt": {
@@ -67,6 +68,7 @@ LABELS: dict[str, dict[str, object]] = {
         "stale": "dados de {t} · tentando de novo",
         "problem_login": "faça login: rode `claude`",
         "problem_usage": "uso indisponível",
+        "problem_limited": "limitado · tentando de novo",
         "weekdays": ("seg", "ter", "qua", "qui", "sex", "sáb", "dom"),
     },
 }
@@ -108,7 +110,7 @@ class Frame:
     usage: Usage | None
     now: datetime
     stale_since: datetime | None = None
-    problem: str | None = None  # "login" or "usage"; translated by the renderer
+    problem: str | None = None  # "login", "usage" or "limited"; translated by the renderer
     ip: str | None = None  # the display's own address, shown small under the logo
 
 

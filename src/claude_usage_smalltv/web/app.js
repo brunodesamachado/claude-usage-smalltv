@@ -87,6 +87,7 @@ const I18N = {
     waiting: "Waiting for the first usage reading…",
     stale: "Showing numbers from {time}: Claude is limiting requests right now. It recovers by itself.",
     loginProblem: "Claude Code is signed out. Open a terminal and run {cmd} once.",
+    limitedProblem: "Claude is limiting requests right now. It will try again shortly.",
     usageProblem: "Usage is unavailable right now. It will try again in a minute.",
     weekSplit: "This week",
     display: "Display",
@@ -196,6 +197,7 @@ const I18N = {
     waiting: "Aguardando a primeira leitura de uso…",
     stale: "Mostrando os números das {time}: o Claude está limitando as consultas agora. Volta sozinho.",
     loginProblem: "O Claude Code saiu da conta. Abra um terminal e rode {cmd} uma vez.",
+    limitedProblem: "O Claude está limitando as consultas agora. Uma nova tentativa é feita em breve.",
     usageProblem: "O uso está indisponível agora. Uma nova tentativa é feita em um minuto.",
     weekSplit: "Nesta semana",
     display: "Display",
@@ -569,7 +571,7 @@ function usageCard() {
   if (u.problem === "login") {
     body = `<div class="note danger">${th("loginProblem", { cmd: "<code>claude</code>" })}</div>`;
   } else if (!u.session && !u.weekly) {
-    body = `<p class="muted">${esc(u.problem === "usage" ? t("usageProblem") : t("waiting"))}</p>`;
+    body = `<p class="muted">${esc(u.problem === "usage" ? t("usageProblem") : u.problem === "limited" ? t("limitedProblem") : t("waiting"))}</p>`;
   } else {
     const split = u.breakdown.length
       ? `<p class="muted small" style="margin:14px 0 0">${esc(t("weekSplit"))}: ${

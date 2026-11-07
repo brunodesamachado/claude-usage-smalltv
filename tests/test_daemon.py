@@ -65,7 +65,7 @@ def test_frames_every_tick_but_usage_only_every_usage_interval():
     assert client.calls == 2
 
 
-def test_rate_limit_backs_off_exponentially_and_honours_retry_after():
+def test_rate_limit_backs_off_exponentially_and_caps_retry_after():
     client = FakeClient(RateLimited(None), RateLimited(None), RateLimited(5000))
     daemon, clock = make(client, usage_interval=300, max_backoff=1800)
     daemon.tick()
@@ -75,7 +75,8 @@ def test_rate_limit_backs_off_exponentially_and_honours_retry_after():
     assert daemon.next_fetch - clock.t == 1200
     clock.t = daemon.next_fetch
     daemon.tick()
-    assert daemon.next_fetch - clock.t == 5000  # server asked for longer than our cap
+    assert daemon.next_fetch - clock.t == 1800  # server asked for 5000: capped so the panel recovers
+    assert daemon.problem == "limited"
 
 
 def test_backoff_resets_after_a_success():

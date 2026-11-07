@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.1] - 2026-11-06
+
+### Fixed
+
+- After Claude answered HTTP 429, the panel stayed on "usage unavailable" for up to an
+  hour. It now waits at most 30 minutes and shows "rate limited · retrying" instead.
+
 ## [0.4.0] - 2026-11-03
 
 ### Added

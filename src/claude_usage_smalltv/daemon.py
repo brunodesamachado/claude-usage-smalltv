@@ -88,7 +88,9 @@ class Daemon:
             self.usage = self.client.fetch()
         except RateLimited as exc:
             self._backoff = min(self._backoff * 2, self.max_backoff)
-            delay = max(exc.retry_after or 0, self._backoff)
+            # The server may ask for an hour; waiting that long leaves the panel blank.
+            delay = min(max(exc.retry_after or 0, self._backoff), self.max_backoff)
+            self.problem = "limited"
             self.next_fetch = now + delay
             log.warning("usage: rate limited, next try in %.0fs", delay)
             return
