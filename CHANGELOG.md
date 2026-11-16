@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.2] - 2026-11-16
+
+### Added
+
+- The settings page shows the running version next to the title.
+
+### Changed
+
+- "Test connection" also retries the Claude usage right away, skipping the wait after a
+  rate limit.
+
 ## [0.4.1] - 2026-11-06
 
 ### Fixed

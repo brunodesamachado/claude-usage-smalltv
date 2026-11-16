@@ -73,6 +73,7 @@ code {
 .mascot .eyes { fill: #141413; }
 h1 { margin: 0; font-size: 19px; letter-spacing: -.01em; }
 h1 span { color: var(--muted); font-weight: 500; }
+h1 small { color: var(--muted); font-size: 12px; font-weight: 500; margin-left: 4px; }
 .top p { margin: 0; color: var(--muted); font-size: 13px; }
 
 .lang-switch { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }

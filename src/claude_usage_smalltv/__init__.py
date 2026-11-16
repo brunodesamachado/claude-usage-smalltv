@@ -1,3 +1,3 @@
 """Show your Claude plan usage on a GeekMagic SmallTV desk display."""
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"

@@ -115,3 +115,14 @@ def test_display_errors_do_not_stop_the_loop():
     daemon, _ = make(FakeClient(USAGE), device=FakeDevice(fail=True))
     daemon.tick()  # must not raise
     assert daemon.usage is USAGE
+
+
+def test_refresh_now_skips_the_backoff_wait():
+    client = FakeClient(RateLimited(None), USAGE)
+    daemon, clock = make(client, usage_interval=300)
+    daemon.tick()
+    assert daemon.next_fetch - clock.t == 600
+    daemon.refresh_now()
+    daemon.tick()  # same instant: no waiting
+    assert daemon.usage is USAGE
+    assert daemon.problem is None

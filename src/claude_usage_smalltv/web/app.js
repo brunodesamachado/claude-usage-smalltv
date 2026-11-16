@@ -366,7 +366,11 @@ function render() {
   document.querySelectorAll("[data-ui-lang]").forEach((b) => {
     b.setAttribute("aria-pressed", String(b.dataset.uiLang === uiLang));
   });
-  if (state.status) document.getElementById("version").textContent = `v${state.status.version}`;
+  if (state.status) {
+    const v = `v${state.status.version}`;
+    document.getElementById("version").textContent = v;
+    document.getElementById("version-top").textContent = v;
+  }
 
   if (state.serviceDown) {
     app.innerHTML = `<div class="note danger">${esc(t("offlineService"))}</div>`;

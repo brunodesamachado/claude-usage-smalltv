@@ -83,6 +83,11 @@ class Daemon:
             ip=self.ip_label,
         )
 
+    def refresh_now(self) -> None:
+        """Ask for the usage at the next tick, skipping the wait and the backoff."""
+        self.next_fetch = 0.0
+        self._backoff = self.usage_interval
+
     def _refresh(self, now: float) -> None:
         try:
             self.usage = self.client.fetch()

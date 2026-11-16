@@ -414,6 +414,9 @@ class Service:
         host = self.config.host
         if host is None:
             raise ServiceError("no display is set up yet")
+        with self._lock:
+            self.daemon.refresh_now()  # also retry the Claude usage, which may be waiting out a 429
+        self.wake()
         try:
             device = self._connect(host)
         except DeviceError as exc:
